@@ -4,7 +4,7 @@ import { getIdToken, User } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { auth, storage } from '../firebase';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://wyffle-backend.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 // ---------- Helper Functions ----------
 const getAuthToken = async (forceRefresh = false): Promise<string> => {

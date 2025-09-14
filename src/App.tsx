@@ -20,6 +20,10 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Documentation from "./pages/Documentation";
+import ApiReference from "./pages/ApiReference";
+import Forums from "./pages/Forums";
+import Events from "./pages/Events";
 
 // UI Imports
 import { Toaster } from "react-hot-toast";
@@ -112,6 +116,10 @@ function App() {
           <Route path="/" element={<Homepage />} />
           <Route path="/login" element={<AuthPage />} />
           <Route path="/apply" element={<Apply />} />
+          <Route path="/docs" element={<Documentation />} />
+          <Route path="/api" element={<ApiReference />} />
+          <Route path="/forums" element={<Forums />} />
+          <Route path="/events" element={<Events />} />
           <Route
             path="/student-dashboard"
             element={
