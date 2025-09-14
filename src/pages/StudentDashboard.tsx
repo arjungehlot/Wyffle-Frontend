@@ -1081,44 +1081,53 @@ const getInitials = (fullName?: string): string => {
       <ToastContainer position="top-right" autoClose={3000} />
       
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link to="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold">W</span>
-                </div>
-                <span className="text-2xl font-bold gradient-text">Wyffle</span>
-              </Link>
-              <span className="text-gray-400">•</span>
-              <span className="text-gray-600 font-medium">Student Dashboard</span>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="font-semibold text-gray-900">{studentData.fullName}</p>
-                <p className="text-sm text-gray-500">
-                  {studentData.institute || 'Student'}
-                </p>
-              </div>
-              {studentData.profileImage ? (
-                <img
-                  src={studentData.profileImage}
-                  alt="Profile"
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold">
-                    {getInitials(studentData.fullName)}
-                  </span>
-                </div>
-              )}
-            </div>
+    <header className="bg-white shadow-sm border-b">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+    <div className="flex flex-wrap items-center justify-between gap-4">
+      
+      {/* Logo + Title */}
+      <div className="flex items-center flex-wrap gap-2 sm:gap-4">
+        <Link to="/" className="flex items-center gap-2">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-sm sm:text-base">W</span>
           </div>
+          <span className="text-xl sm:text-2xl font-bold gradient-text">Wyffle</span>
+        </Link>
+
+        <span className="hidden sm:inline text-gray-400">•</span>
+        <span className="text-gray-600 font-medium text-sm sm:text-base">
+          Student Dashboard
+        </span>
+      </div>
+
+      {/* User Info */}
+      <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end">
+        <div className="text-left sm:text-right">
+          <p className="font-semibold text-gray-900 text-sm sm:text-base truncate max-w-[150px] sm:max-w-none">
+            {studentData.fullName}
+          </p>
+          <p className="text-xs sm:text-sm text-gray-500 truncate max-w-[150px] sm:max-w-none">
+            {studentData.institute || 'Student'}
+          </p>
         </div>
-      </header>
+
+        {studentData.profileImage ? (
+          <img
+            src={studentData.profileImage}
+            alt="Profile"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover flex-shrink-0"
+          />
+        ) : (
+          <div className="w-9 h-9 sm:w-10 sm:h-10 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+            <span className="text-white font-bold text-sm sm:text-base">
+              {getInitials(studentData.fullName)}
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+</header>
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

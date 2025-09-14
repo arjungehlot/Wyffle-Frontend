@@ -261,6 +261,8 @@ const adminPassword = "Arjun@123";
     fetchData();
   };
 
+  
+
   const getStatusColor = (status: string): string => {
     switch (status) {
       case "active":
@@ -363,16 +365,38 @@ const adminPassword = "Arjun@123";
     }
   };
 
-  const handleUpdateStudentStatus = async (uid: string, status: string): Promise<void> => {
-    try {
-      await ApiService.updateStudentStatus(uid, status);
-      toast.success("Student status updated successfully");
-      fetchData();
-    } catch (error) {
-      console.error("Error updating student status:", error);
-      toast.error("Failed to update student status");
+ const handleUpdateStudentStatus = async (uid: string, status: string) => {
+  try {
+    const token = await auth.currentUser?.getIdToken();
+    if (!token) {
+      toast.error("Unauthorized. Please log in again.");
+      return;
     }
-  };
+
+    const response = await fetch(`/api/applications/${uid}/status`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ status }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to update status");
+    }
+
+    toast.success("Application status updated!");
+
+    // Refresh applications after update
+    await fetchData();
+  } catch (err) {
+    console.error("Status update error:", err);
+    toast.error(err instanceof Error ? err.message : "Error updating status");
+  }
+};
+
 
   const handleUpdatePaymentStatus = async (uid: string, paymentStatus: string): Promise<void> => {
     try {
@@ -873,139 +897,170 @@ const adminPassword = "Arjun@123";
           </div>
         );
 
-      case "applications":
-        return (
-          <div className="space-y-6">
-            {/* Search and Filter */}
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search applications..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
+     case "applications":
+  return (
+    <div className="space-y-6">
+      {/* Search and Filter */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search applications..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+          />
+        </div>
 
-              <div className="relative">
-                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="pl-10 pr-8 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none bg-white"
-                >
-                  <option value="all">All Status</option>
-                  {applicationStatusOptions.map((option) => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </select>
-              </div>
+        <div className="relative">
+          <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="pl-10 pr-8 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none bg-white"
+          >
+            <option value="all">All Status</option>
+            {applicationStatusOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </div>
 
-              <motion.button
-                className="bg-purple-600 text-white px-4 py-3 rounded-xl font-medium flex items-center space-x-2"
-                whileHover={{ scale: 1.05 }}
-                onClick={handleRefresh}
-              >
-                <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
-                <span>Refresh</span>
-              </motion.button>
-            </div>
+        <motion.button
+          className="bg-purple-600 text-white px-4 py-3 rounded-xl font-medium flex items-center space-x-2"
+          whileHover={{ scale: 1.05 }}
+          onClick={handleRefresh}
+        >
+          <RefreshCw
+            className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`}
+          />
+          <span>Refresh</span>
+        </motion.button>
+      </div>
 
-            {/* Applications List */}
-            <div className="space-y-4">
-              {filteredApplications.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-gray-500 text-lg">No applications found</p>
-                </div>
-              ) : (
-                filteredApplications.map((application, index) => (
-                  <motion.div
-                    key={application.uid}
-                    className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-shadow"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1, duration: 0.4 }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-4 mb-3">
-                          <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
-                            <span className="text-white font-bold">
-                              {application.fullName.split(" ").map((n) => n[0]).join("")}
-                            </span>
-                          </div>
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900">{application.fullName}</h3>
-                            <p className="text-gray-600">{application.email}</p>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                          <div>
-                            <p className="text-sm text-gray-500">College</p>
-                            <p className="font-medium text-gray-900">{application.college}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-500">Degree</p>
-                            <p className="font-medium text-gray-900">{application.degree}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-500">Graduation Year</p>
-                            <p className="font-medium text-gray-900">{application.yearOfGraduation}</p>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-wrap gap-3">
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(application.status)}`}>
-                            {application.status}
-                          </span>
-                          <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
-                            Applied: {new Date(application.createdAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col space-y-2">
-                        <motion.button
-                          className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                          whileHover={{ scale: 1.1 }}
-                          onClick={() => handleViewApplication(application)}
-                        >
-                          <Eye className="w-5 h-5" />
-                        </motion.button>
-                        <motion.button
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          whileHover={{ scale: 1.1 }}
-                          onClick={() => handleEditApplication(application)}
-                        >
-                          <Edit className="w-5 h-5" />
-                        </motion.button>
-                        <motion.button
-                          className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                          whileHover={{ scale: 1.1 }}
-                          onClick={() => handleSendEmail(application.email)}
-                        >
-                          <Mail className="w-5 h-5" />
-                        </motion.button>
-                        {application.status === 'pending' && (
-                          <motion.button
-                            className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
-                            whileHover={{ scale: 1.1 }}
-                            onClick={() => handleUpdateStudentStatus(application.uid, 'shortlisted')}
-                          >
-                            <UserCheck className="w-5 h-5" />
-                          </motion.button>
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
-                ))
-              )}
-            </div>
+      {/* Applications List */}
+      <div className="space-y-4">
+        {filteredApplications.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">No applications found</p>
           </div>
-        );
+        ) : (
+          filteredApplications.map((application, index) => (
+            <motion.div
+              key={application.uid}
+              className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-shadow"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1, duration: 0.4 }}
+            >
+              <div className="flex items-center justify-between">
+                {/* Left side - Applicant Info */}
+                <div className="flex-1">
+                  <div className="flex items-center space-x-4 mb-3">
+                    <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold">
+                        {application.fullName
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {application.fullName}
+                      </h3>
+                      <p className="text-gray-600">{application.email}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                      <p className="text-sm text-gray-500">College</p>
+                      <p className="font-medium text-gray-900">
+                        {application.college}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Degree</p>
+                      <p className="font-medium text-gray-900">
+                        {application.degree}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">
+                        Graduation Year
+                      </p>
+                      <p className="font-medium text-gray-900">
+                        {application.yearOfGraduation}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-3">
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                        application.status
+                      )}`}
+                    >
+                      {application.status}
+                    </span>
+                    <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                      Applied:{" "}
+                      {new Date(application.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Right side - Actions */}
+                <div className="flex flex-col space-y-2">
+                  <motion.button
+                    className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    onClick={() => handleViewApplication(application)}
+                  >
+                    <Eye className="w-5 h-5" />
+                  </motion.button>
+                  <motion.button
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    onClick={() => handleEditApplication(application)}
+                  >
+                    <Edit className="w-5 h-5" />
+                  </motion.button>
+                  <motion.button
+                    className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    onClick={() => handleSendEmail(application.email)}
+                  >
+                    <Mail className="w-5 h-5" />
+                  </motion.button>
+
+                  {/* Status update button */}
+                  {application.status === "pending" && (
+                    <motion.button
+                      className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                      whileHover={{ scale: 1.1 }}
+                      onClick={() =>
+                        handleUpdateStudentStatus(
+                          application.uid,
+                          "shortlisted"
+                        )
+                      }
+                    >
+                      <UserCheck className="w-5 h-5" />
+                    </motion.button>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          ))
+        )}
+      </div>
+    </div>
+  );
 
       case "payments":
         return (

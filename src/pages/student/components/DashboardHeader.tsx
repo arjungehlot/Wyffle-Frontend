@@ -14,7 +14,7 @@ const DashboardHeader = ({ fullName, institute, profileImage, getInitials }: Das
         <div className="flex items-center space-x-4">
           <Link to="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">W</span>
+              <span className="text-black font-bold">W</span>
             </div>
             <span className="text-2xl font-bold gradient-text">Wyffle</span>
           </Link>

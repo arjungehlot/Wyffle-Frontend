@@ -14,24 +14,24 @@ import logo from "../Assets/Logo-BG.jpg"
 
 const Footer = () => {
   const companyLinks = [
-    { name: 'About Us', href: '#about' },
-    { name: 'How It Works', href: '#how' },
-    { name: 'Success Stories', href: '#testimonials' },
-    { name: 'Contact', href: '#contact' }
+    { name: 'About Us', href: '/about' },
+    { name: 'How It Works', href: '/how' },
+    { name: 'Success Stories', href: '/testimonials' },
+    { name: 'Contact', href: '/contact' }
   ];
 
   const resourceLinks = [
     { name: 'Student Dashboard', href: '/student-dashboard' },
     { name: 'Admin Panel', href: '/admin' },
-    { name: 'Documentation', href: '#docs' },
-    { name: 'API Reference', href: '#api' }
+    { name: 'Documentation', href: '/docs' },
+    { name: 'API Reference', href: '/api' }
   ];
 
   const communityLinks = [
-    { name: 'Discord Server', href: '#discord' },
-    { name: 'WhatsApp Groups', href: '#whatsapp' },
-    { name: 'Student Forums', href: '#forums' },
-    { name: 'Events', href: '#events' }
+    { name: 'Discord Server', href: '/discord' },
+    { name: 'WhatsApp Groups', href: '/whatsapp' },
+    { name: 'Student Forums', href: '/forums' },
+    { name: 'Events', href: '/events' }
   ];
 
   const socialLinks = [

@@ -87,11 +87,8 @@ const Apply = () => {
       return;
     }
 
-    // Check if either resume link or file is provided
     if (!formData.resumeLink.trim() && !formData.resumeFile) {
-      toast.error(
-        "Please provide either a Resume/Portfolio Link or upload a resume file."
-      );
+      toast.error("Please provide either a Resume/Portfolio Link or upload a resume file.");
       return;
     }
 
@@ -100,9 +97,26 @@ const Apply = () => {
 
     try {
       const token = await currentUser.getIdToken();
-      let uploadedResumeURL = formData.resumeLink; // Start with the link
 
-      // If a file is uploaded, use it instead of the link
+      // ✅ Check if the user has already submitted
+      const existingResponse = await fetch(`/api/applications/${currentUser.uid}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (existingResponse.ok) {
+        const existingApp = await existingResponse.json();
+        if (existingApp) {
+          toast.error("You have already submitted an application.");
+          alert("You have already submitted an application.");
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      let uploadedResumeURL = formData.resumeLink;
+
       if (formData.resumeFile) {
         const file = formData.resumeFile;
         const storageRef = ref(
@@ -111,7 +125,6 @@ const Apply = () => {
         );
         const uploadTask = uploadBytesResumable(storageRef, file);
 
-        // Create a promise to handle the upload
         uploadedResumeURL = await new Promise((resolve, reject) => {
           uploadTask.on(
             "state_changed",
@@ -120,29 +133,27 @@ const Apply = () => {
                 (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
               setUploadProgress(Math.round(progress));
             },
-            (error) => {
-              reject(error);
-            },
+            reject,
             async () => {
               try {
                 const url = await getDownloadURL(uploadTask.snapshot.ref);
                 resolve(url);
-              } catch (error) {
-                reject(error);
+              } catch (err) {
+                reject(err);
               }
             }
           );
         });
       }
 
+      const { resumeFile, ...rest } = formData;
       const payload = {
-        ...formData,
-        resumeFile: undefined, // Remove the file object from payload
+        ...rest,
         resumeURL: uploadedResumeURL,
         userId: currentUser.uid,
       };
 
-      const response = await fetch("https://wyffle-backend.onrender.com/api/applications", {
+      const response = await fetch("/api/applications", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -152,14 +163,22 @@ const Apply = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to submit application.");
+        let errorMessage = "Failed to submit application.";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          errorMessage = `Error ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
 
       toast.success("Application submitted successfully!");
+
+      // ✅ Delay navigation so toast is visible
       setTimeout(() => {
         navigate("/student-dashboard");
-      }, 1500);
+      }, 2000); // shorter delay (2s is enough)
     } catch (error) {
       console.error(error);
       toast.error(
@@ -170,6 +189,8 @@ const Apply = () => {
       setUploadProgress(0);
     }
   };
+
+
 
   const inputStyles =
     "w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 transition";
@@ -391,9 +412,8 @@ const Apply = () => {
             whileTap={{ scale: isSubmitting ? 1 : 0.97 }}
           >
             {isSubmitting
-              ? `Submitting... ${
-                  uploadProgress > 0 ? uploadProgress + "%" : ""
-                }`
+              ? `Submitting... ${uploadProgress > 0 ? uploadProgress + "%" : ""
+              }`
               : "Submit Application"}
           </motion.button>
         </form>
