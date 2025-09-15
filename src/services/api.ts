@@ -92,8 +92,8 @@ export const ApiService = {
   getMyApplication: () => request('/api/applications/my-application'),
   getAllApplications: () => request('/api/applications'),
 
-  updateApplicationStatus: (uid: string, status: string) =>
-    request(`/api/applications/${uid}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),
+  updateApplicationStatus: (id: string, status: string) =>
+    request(`/api/applications/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),
 
   // ---------- Students ----------
   getAllStudents: () => request('/api/students'),

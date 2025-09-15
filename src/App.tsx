@@ -29,6 +29,8 @@ import Events from "./pages/Events";
 import { Toaster } from "react-hot-toast";
 import { FaWhatsapp } from "react-icons/fa";
 import "./index.css";
+import DiscordGuide from "./pages/DiscordGuide";
+import FeaturedProjects from "./components/FeaturedProjects";
 
 // --- Main App Entry Point (Unchanged) ---
 function AppWrapper() {
@@ -120,6 +122,9 @@ function App() {
           <Route path="/api" element={<ApiReference />} />
           <Route path="/forums" element={<Forums />} />
           <Route path="/events" element={<Events />} />
+          <Route path="/discord" element={<DiscordGuide />} />
+          <Route path="/projects" element={<FeaturedProjects />} />
+           <Route path="/event" element={<Events />} />
           <Route
             path="/student-dashboard"
             element={

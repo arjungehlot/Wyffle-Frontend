@@ -13,11 +13,9 @@ import {
   CheckCircle,
   AlertCircle,
   Home,
-  Camera,     
-  Edit,        
+  Camera,
+  Edit,
   Save,
-  CreditCard,
-  Upload,
   Phone,
   MapPin,
   GraduationCap,
@@ -32,8 +30,11 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import {ApiService} from "../services/api";
-import { BiLeftArrow } from "react-icons/bi";
+import { ApiService } from "../services/api";
+import { useNavigate } from "react-router-dom";
+
+
+
 
 // ----------------------
 // Types
@@ -67,7 +68,7 @@ interface StudentData {
   activeDays?: number;
   projectsBuilt?: number;
   location?: string;
-  skills?: string[];
+  skills?: string[] | string | null | undefined;
   interestedFields?: string[];
   dateOfBirth?: string;
   progressSteps?: {
@@ -128,6 +129,13 @@ const StudentDashboard: React.FC = () => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editedProfile, setEditedProfile] = useState<Partial<StudentData>>({});
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [skillsInput, setSkillsInput] = useState(
+    Array.isArray(editedProfile.skills) ? editedProfile.skills.join(", ") : ""
+  );
+
+
+  const navigate = useNavigate();
+
 
   const tabs: Tab[] = [
     { id: "overview", label: "Overview", icon: Home },
@@ -139,6 +147,8 @@ const StudentDashboard: React.FC = () => {
     { id: "settings", label: "Settings", icon: Settings },
     { id: "back", label: "Back", icon: ArrowLeft },
   ];
+
+
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -159,17 +169,39 @@ const StudentDashboard: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (activeTab === "back") {
+      navigate("/");
+    }
+  }, [activeTab, navigate]);
+
+  useEffect(() => {
+    // sync input whenever profile changes
+    if (Array.isArray(editedProfile.skills)) {
+      setSkillsInput(editedProfile.skills.join(", "));
+    }
+  }, [editedProfile.skills]);
+
   const fetchStudentData = async (uid: string) => {
     try {
       setLoading(true);
-      
+
       // Fetch student profile
       try {
         const profileData = await ApiService.getMyProfile();
-        setStudentData(profileData.data);
-        setEditedProfile(profileData.data);
+        const normalizedProfile = {
+          ...profileData.data,
+          skills: Array.isArray(profileData.data.skills)
+            ? profileData.data.skills
+            : (typeof profileData.data.skills === "string"
+              ? profileData.data.skills.split(",").map((s: string) => s.trim()).filter(Boolean)
+              : []),
+        };
+        setStudentData(normalizedProfile);
+        setEditedProfile(normalizedProfile);
       } catch (error) {
-        console.error('Error fetching profile:', error);
+        console.error("Error fetching profile:", error);
+
         // If no student profile exists, create a basic one from user data
         const basicProfile: StudentData = {
           uid,
@@ -179,6 +211,7 @@ const StudentDashboard: React.FC = () => {
           progressPercentage: 0,
           paymentStatus: "not_selected",
           createdAt: new Date().toISOString(),
+          skills: [], // always start with array
         };
         setStudentData(basicProfile);
         setEditedProfile(basicProfile);
@@ -189,7 +222,7 @@ const StudentDashboard: React.FC = () => {
         const documentsData = await ApiService.getMyDocuments();
         setDocuments(documentsData.data || []);
       } catch (error) {
-        console.error('Error fetching documents:', error);
+        console.error("Error fetching documents:", error);
       }
 
       // Fetch payment history
@@ -197,9 +230,8 @@ const StudentDashboard: React.FC = () => {
         const paymentsData = await ApiService.getPaymentHistory();
         setPayments(paymentsData.data || []);
       } catch (error) {
-        console.error('Error fetching payments:', error);
+        console.error("Error fetching payments:", error);
       }
-
     } catch (error) {
       console.error("Error fetching student data:", error);
       toast.error("Failed to fetch student data");
@@ -208,41 +240,60 @@ const StudentDashboard: React.FC = () => {
     }
   };
 
-
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'profile' | 'cover') => {
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+    type: "profile" | "cover"
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       try {
         const path = `${type}-images/${userData?.uid}/${file.name}`;
         const imageUrl = await ApiService.uploadToFirebase(file, path);
-        
-        if (type === 'profile') {
+
+        if (type === "profile") {
           setEditedProfile(prev => ({ ...prev, profileImage: imageUrl }));
         } else {
           setEditedProfile(prev => ({ ...prev, coverImage: imageUrl }));
         }
 
         setProfileImage(imageUrl);
-        
         toast.success(`${type} image uploaded successfully`);
       } catch (error) {
-        console.error('Error uploading image:', error);
-        toast.error('Failed to upload image');
+        console.error("Error uploading image:", error);
+        toast.error("Failed to upload image");
       }
     }
   };
 
   const handleSaveProfile = async () => {
     try {
-      await ApiService.updateMyProfile(editedProfile);
-      setStudentData(prev => ({ ...prev, ...editedProfile } as StudentData));
+      interface NormalizedProfile extends Partial<StudentData> {
+        skills: string[];
+      }
+
+      const normalizedProfile: NormalizedProfile = {
+        ...editedProfile,
+        skills: Array.isArray(editedProfile.skills)
+          ? editedProfile.skills
+          : (typeof editedProfile.skills === "string"
+            ? (editedProfile.skills as string)
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean)
+            : []),
+
+      };
+
+      await ApiService.updateMyProfile(normalizedProfile);
+      setStudentData(prev => ({ ...prev, ...normalizedProfile } as StudentData));
       setIsEditing(false);
       toast.success("Profile updated successfully");
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error("Error updating profile:", error);
       toast.error("Failed to update profile");
     }
   };
+
 
   const handleApplyCoupon = async () => {
     try {
@@ -261,136 +312,136 @@ const StudentDashboard: React.FC = () => {
     }
   };
 
- const handlePayment = async () => {
-  try {
-    if (studentData?.status !== 'shortlisted') {
-      toast.error("You need to be shortlisted to make payment");
-      return;
+  const handlePayment = async () => {
+    try {
+      if (studentData?.status !== 'shortlisted') {
+        toast.error("You need to be shortlisted to make payment");
+        return;
+      }
+
+      // ✅ Load Razorpay checkout script dynamically
+      const loadRazorpayScript = (): Promise<boolean> => {
+        return new Promise((resolve) => {
+          const script = document.createElement('script');
+          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+          script.onload = () => resolve(true);
+          script.onerror = () => resolve(false);
+          document.body.appendChild(script);
+        });
+      };
+
+      const isRazorpayLoaded = await loadRazorpayScript();
+      if (!isRazorpayLoaded) {
+        toast.error("Razorpay SDK failed to load. Check your internet connection.");
+        return;
+      }
+
+      // 1️⃣ Create payment order from backend
+      const orderData = await ApiService.createPaymentOrder(couponApplied ? couponCode! : "");
+
+      // 2️⃣ Razorpay options
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: orderData.data.amount,
+        currency: orderData.data.currency,
+        name: "Wyffle Internship",
+        description: "Internship Program Fee",
+        order_id: orderData.data.orderId,
+        handler: async (response: any) => {
+          try {
+            await ApiService.verifyPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+            toast.success("Payment successful!");
+            fetchStudentData(userData!.uid);
+          } catch (error) {
+            console.error('Payment verification failed:', error);
+            toast.error("Payment verification failed");
+          }
+        },
+        prefill: {
+          name: studentData?.fullName,
+          email: studentData?.email,
+          contact: studentData?.phoneNo,
+        },
+        theme: {
+          color: "#7C3AED",
+        },
+      };
+
+      // 3️⃣ Open Razorpay checkout
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+
+    } catch (error) {
+      console.error('Error creating payment:', error);
+      toast.error("Failed to create payment order");
     }
-
-    // ✅ Load Razorpay checkout script dynamically
-    const loadRazorpayScript = (): Promise<boolean> => {
-      return new Promise((resolve) => {
-        const script = document.createElement('script');
-        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-        script.onload = () => resolve(true);
-        script.onerror = () => resolve(false);
-        document.body.appendChild(script);
-      });
-    };
-
-    const isRazorpayLoaded = await loadRazorpayScript();
-    if (!isRazorpayLoaded) {
-      toast.error("Razorpay SDK failed to load. Check your internet connection.");
-      return;
-    }
-
-    // 1️⃣ Create payment order from backend
-    const orderData = await ApiService.createPaymentOrder(couponApplied ? couponCode! : "");
-
-    // 2️⃣ Razorpay options
-    const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-      amount: orderData.data.amount,
-      currency: orderData.data.currency,
-      name: "Wyffle Internship",
-      description: "Internship Program Fee",
-      order_id: orderData.data.orderId,
-      handler: async (response: any) => {
-        try {
-          await ApiService.verifyPayment({
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature,
-          });
-          toast.success("Payment successful!");
-          fetchStudentData(userData!.uid);
-        } catch (error) {
-          console.error('Payment verification failed:', error);
-          toast.error("Payment verification failed");
-        }
-      },
-      prefill: {
-        name: studentData?.fullName,
-        email: studentData?.email,
-        contact: studentData?.phoneNo,
-      },
-      theme: {
-        color: "#7C3AED",
-      },
-    };
-
-    // 3️⃣ Open Razorpay checkout
-    const rzp = new (window as any).Razorpay(options);
-    rzp.open();
-
-  } catch (error) {
-    console.error('Error creating payment:', error);
-    toast.error("Failed to create payment order");
-  }
-};
+  };
 
 
   const handleDownloadDocument = (document: Document) => {
     window.open(document.fileUrl, '_blank');
   };
 
-const getInitials = (fullName?: string): string => {
-  if (!fullName) return ""; // handle undefined, null, or empty string
+  const getInitials = (fullName?: string): string => {
+    if (!fullName) return ""; // handle undefined, null, or empty string
 
-  const names = fullName.trim().split(" ").filter(Boolean); // remove extra spaces
-  if (names.length === 0) return "";
+    const names = fullName.trim().split(" ").filter(Boolean); // remove extra spaces
+    if (names.length === 0) return "";
 
-  if (names.length === 1) return names[0][0].toUpperCase();
+    if (names.length === 1) return names[0][0].toUpperCase();
 
-  return (names[0][0] + names[names.length - 1][0]).toUpperCase();
-};
+    return (names[0][0] + names[names.length - 1][0]).toUpperCase();
+  };
 
 
   const getStatusSteps = (): StatusStep[] => {
     const steps = studentData?.progressSteps;
     return [
-      { 
-        name: "Application Submitted", 
-        status: steps?.applicationSubmitted ? "completed" : "pending", 
-        date: steps?.applicationSubmitted ? studentData?.createdAt || "" : "TBD" 
+      {
+        name: "Application Submitted",
+        status: steps?.applicationSubmitted ? "completed" : "pending",
+        date: steps?.applicationSubmitted ? studentData?.createdAt || "" : "TBD"
       },
-      { 
-        name: "Resume Shortlisted", 
-        status: steps?.resumeShortlisted ? "completed" : "pending", 
-        date: steps?.resumeShortlisted ? studentData?.createdAt || "" : "TBD" 
+      {
+        name: "Resume Shortlisted",
+        status: steps?.resumeShortlisted ? "completed" : "pending",
+        date: steps?.resumeShortlisted ? studentData?.createdAt || "" : "TBD"
       },
-      { 
-        name: "Interview Completed", 
-        status: steps?.interviewCompleted ? "completed" : "pending", 
-        date: steps?.interviewCompleted ? studentData?.createdAt || "" : "TBD" 
+      {
+        name: "Interview Completed",
+        status: steps?.interviewCompleted ? "completed" : "pending",
+        date: steps?.interviewCompleted ? studentData?.createdAt || "" : "TBD"
       },
-      { 
-        name: "Payment Processed", 
-        status: steps?.paymentProcess ? "completed" : studentData?.status === 'shortlisted' ? "active" : "pending", 
-        date: steps?.paymentProcess ? studentData?.createdAt || "" : "TBD" 
+      {
+        name: "Payment Processed",
+        status: steps?.paymentProcess ? "completed" : studentData?.status === 'shortlisted' ? "active" : "pending",
+        date: steps?.paymentProcess ? studentData?.createdAt || "" : "TBD"
       },
-      { 
-        name: "Internship Active", 
-        status: steps?.internshipActive ? "completed" : "pending", 
-        date: steps?.internshipActive ? studentData?.createdAt || "" : "TBD" 
+      {
+        name: "Internship Active",
+        status: steps?.internshipActive ? "completed" : "pending",
+        date: steps?.internshipActive ? studentData?.createdAt || "" : "TBD"
       },
-      { 
-        name: "Final Showcase", 
-        status: steps?.finalShowcase ? "completed" : "pending", 
-        date: steps?.finalShowcase ? studentData?.createdAt || "" : "TBD" 
+      {
+        name: "Final Showcase",
+        status: steps?.finalShowcase ? "completed" : "pending",
+        date: steps?.finalShowcase ? studentData?.createdAt || "" : "TBD"
       },
-      { 
-        name: "Certificate Ready", 
-        status: steps?.certificateReady ? "completed" : "pending", 
-        date: steps?.certificateReady ? studentData?.createdAt || "" : "TBD" 
+      {
+        name: "Certificate Ready",
+        status: steps?.certificateReady ? "completed" : "pending",
+        date: steps?.certificateReady ? studentData?.createdAt || "" : "TBD"
       },
     ];
   };
 
   const renderTabContent = () => {
     if (!studentData) return null;
-    
+
     switch (activeTab) {
       case "overview":
         return (
@@ -474,22 +525,20 @@ const getInitials = (fullName?: string): string => {
                 Current Status
               </h3>
               <div className="flex items-center space-x-4">
-                <div className={`w-3 h-3 rounded-full ${
-                  studentData.status === 'active' ? 'bg-green-500 animate-pulse' :
+                <div className={`w-3 h-3 rounded-full ${studentData.status === 'active' ? 'bg-green-500 animate-pulse' :
                   studentData.status === 'shortlisted' ? 'bg-yellow-500' :
-                  'bg-gray-400'
-                }`} />
+                    'bg-gray-400'
+                  }`} />
                 <span className="text-lg font-medium text-gray-700 capitalize">
                   {studentData.status}
                 </span>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  studentData.status === 'active' ? 'bg-green-100 text-green-700' :
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${studentData.status === 'active' ? 'bg-green-100 text-green-700' :
                   studentData.status === 'shortlisted' ? 'bg-yellow-100 text-yellow-700' :
-                  'bg-gray-100 text-gray-700'
-                }`}>
+                    'bg-gray-100 text-gray-700'
+                  }`}>
                   {studentData.status === 'active' ? 'On Track' :
-                   studentData.status === 'shortlisted' ? 'Payment Pending' :
-                   'Under Review'}
+                    studentData.status === 'shortlisted' ? 'Payment Pending' :
+                      'Under Review'}
                 </span>
               </div>
             </motion.div>
@@ -507,14 +556,14 @@ const getInitials = (fullName?: string): string => {
             {/* Cover Image */}
             <div className="h-48 bg-gradient-to-r from-purple-500 to-indigo-600 relative">
               {studentData.coverImage && (
-                <img 
-                  src={studentData.coverImage} 
-                  alt="Cover" 
+                <img
+                  src={studentData.coverImage}
+                  alt="Cover"
                   className="w-full h-full object-cover"
                 />
               )}
               <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
-                <motion.label 
+                <motion.label
                   htmlFor="cover-upload"
                   className="cursor-pointer bg-white bg-opacity-90 text-purple-700 px-4 py-2 rounded-lg font-medium flex items-center space-x-2"
                   whileHover={{ scale: 1.05 }}
@@ -522,10 +571,10 @@ const getInitials = (fullName?: string): string => {
                 >
                   <Edit className="w-4 h-4" />
                   <span>Change Cover</span>
-                  <input 
-                    id="cover-upload" 
-                    type="file" 
-                    className="hidden" 
+                  <input
+                    id="cover-upload"
+                    type="file"
+                    className="hidden"
                     accept="image/*"
                     onChange={(e) => handleImageUpload(e, 'cover')}
                   />
@@ -540,9 +589,9 @@ const getInitials = (fullName?: string): string => {
                 <div className="relative">
                   <div className="w-32 h-32 rounded-full border-4 border-white bg-gray-200 overflow-hidden shadow-lg">
                     {studentData.profileImage ? (
-                      <img 
-                        src={studentData.profileImage} 
-                        alt="Profile" 
+                      <img
+                        src={studentData.profileImage}
+                        alt="Profile"
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -553,23 +602,23 @@ const getInitials = (fullName?: string): string => {
                       </div>
                     )}
                   </div>
-                  <motion.label 
+                  <motion.label
                     htmlFor="profile-upload"
                     className="absolute bottom-2 right-2 bg-purple-600 text-white p-2 rounded-full cursor-pointer shadow-md"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                   >
                     <Camera className="w-4 h-4" />
-                    <input 
-                      id="profile-upload" 
-                      type="file" 
-                      className="hidden" 
+                    <input
+                      id="profile-upload"
+                      type="file"
+                      className="hidden"
                       accept="image/*"
                       onChange={(e) => handleImageUpload(e, 'profile')}
                     />
                   </motion.label>
                 </div>
-                
+
                 <h2 className="text-2xl font-bold text-gray-900 mt-4">
                   {studentData.fullName}
                 </h2>
@@ -583,11 +632,10 @@ const getInitials = (fullName?: string): string => {
                     Profile Information
                   </h3>
                   <motion.button
-                    className={`px-4 py-2 rounded-lg font-medium flex items-center space-x-2 ${
-                      isEditing 
-                        ? 'bg-green-600 text-white' 
-                        : 'bg-purple-600 text-white'
-                    }`}
+                    className={`px-4 py-2 rounded-lg font-medium flex items-center space-x-2 ${isEditing
+                      ? 'bg-green-600 text-white'
+                      : 'bg-purple-600 text-white'
+                      }`}
                     whileHover={{ scale: 1.05 }}
                     onClick={() => {
                       if (isEditing) {
@@ -601,7 +649,7 @@ const getInitials = (fullName?: string): string => {
                     <span>{isEditing ? 'Save Changes' : 'Edit Profile'}</span>
                   </motion.button>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -737,16 +785,16 @@ const getInitials = (fullName?: string): string => {
                   </label>
                   <input
                     type="text"
-                    value={editedProfile.skills?.join(', ') || ''}
-                    onChange={(e) => setEditedProfile(prev => ({ 
-                      ...prev, 
-                      skills: e.target.value.split(',').map(s => s.trim()).filter(s => s) 
-                    }))}
+                    value={skillsInput}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setSkillsInput(e.target.value)
+                    }
                     disabled={!isEditing}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-50"
                     placeholder="React, Node.js, Python, etc."
                   />
                 </div>
+
               </div>
             </div>
           </motion.div>
@@ -770,13 +818,12 @@ const getInitials = (fullName?: string): string => {
                   className="flex items-center space-x-4 p-4 rounded-xl border border-gray-100"
                 >
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      step.status === "completed"
-                        ? "bg-green-100"
-                        : step.status === "active"
+                    className={`w-8 h-8 rounded-full flex items-center justify-center ${step.status === "completed"
+                      ? "bg-green-100"
+                      : step.status === "active"
                         ? "bg-blue-100"
                         : "bg-gray-100"
-                    }`}
+                      }`}
                   >
                     {step.status === "completed" && (
                       <CheckCircle className="w-5 h-5 text-green-600" />
@@ -862,7 +909,7 @@ const getInitials = (fullName?: string): string => {
             <h3 className="text-xl font-bold text-gray-900 mb-6">
               Payment Details
             </h3>
-            
+
             {/* Batch Information */}
             <div className="mb-8 p-6 bg-purple-50 rounded-xl border border-purple-200">
               <h4 className="text-lg font-semibold text-purple-800 mb-2">
@@ -870,48 +917,47 @@ const getInitials = (fullName?: string): string => {
               </h4>
               <p className="text-gray-600">Join our exclusive web development program with hands-on projects and mentorship</p>
             </div>
-            
-           {/* Payment Status */}
-<div className="mb-8">
-  <h4 className="text-lg font-semibold text-gray-800 mb-4">Payment Status</h4>
-  <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
-    <div
-      className={`w-3 h-3 rounded-full ${
-        studentData?.paymentStatus === "not_selected"
-          ? "bg-gray-400"
-          : studentData?.paymentStatus === "pending"
-          ? "bg-yellow-400"
-          : studentData?.paymentStatus === "paid"
-          ? "bg-green-400"
-          : "bg-red-400"
-      }`}
-    ></div>
 
-    <span className="font-medium text-gray-700 capitalize">
-      {studentData?.paymentStatus
-        ? studentData.paymentStatus.replace("_", " ")
-        : "Unknown"}
-    </span>
+            {/* Payment Status */}
+            <div className="mb-8">
+              <h4 className="text-lg font-semibold text-gray-800 mb-4">Payment Status</h4>
+              <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
+                <div
+                  className={`w-3 h-3 rounded-full ${studentData?.paymentStatus === "not_selected"
+                    ? "bg-gray-400"
+                    : studentData?.paymentStatus === "pending"
+                      ? "bg-yellow-400"
+                      : studentData?.paymentStatus === "paid"
+                        ? "bg-green-400"
+                        : "bg-red-400"
+                    }`}
+                ></div>
 
-    {studentData?.paymentStatus === "not_selected" && (
-      <span className="ml-auto px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm">
-        Not Shortlisted
-      </span>
-    )}
+                <span className="font-medium text-gray-700 capitalize">
+                  {studentData?.paymentStatus
+                    ? studentData.paymentStatus.replace("_", " ")
+                    : "Unknown"}
+                </span>
 
-    {studentData?.paymentStatus === "pending" && (
-      <span className="ml-auto px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm">
-        Payment Required
-      </span>
-    )}
+                {studentData?.paymentStatus === "not_selected" && (
+                  <span className="ml-auto px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm">
+                    Not Shortlisted
+                  </span>
+                )}
 
-    {studentData?.paymentStatus === "paid" && (
-      <span className="ml-auto px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
-        Payment Complete
-      </span>
-    )}
-  </div>
-</div>
+                {studentData?.paymentStatus === "pending" && (
+                  <span className="ml-auto px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm">
+                    Payment Required
+                  </span>
+                )}
+
+                {studentData?.paymentStatus === "paid" && (
+                  <span className="ml-auto px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+                    Payment Complete
+                  </span>
+                )}
+              </div>
+            </div>
 
             {/* Pricing Information */}
             <div className="mb-8 p-6 bg-gray-50 rounded-xl">
@@ -933,7 +979,7 @@ const getInitials = (fullName?: string): string => {
                 </div>
               </div>
             </div>
-            
+
             {/* Coupon Application */}
             {studentData.status === 'shortlisted' && studentData.paymentStatus !== 'paid' && (
               <div className="mb-8">
@@ -960,7 +1006,7 @@ const getInitials = (fullName?: string): string => {
                 </p>
               </div>
             )}
-            
+
             {/* Payment Button */}
             {studentData.status === 'shortlisted' && studentData.paymentStatus !== 'paid' && (
               <motion.button
@@ -984,7 +1030,7 @@ const getInitials = (fullName?: string): string => {
                 </div>
               </div>
             )}
-            
+
             {/* Payment Success Message */}
             {studentData.paymentStatus === 'paid' && (
               <motion.div
@@ -1016,11 +1062,10 @@ const getInitials = (fullName?: string): string => {
                       </div>
                       <div className="text-right">
                         <p className="font-medium">₹{payment.finalAmount}</p>
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          payment.status === 'paid' ? 'bg-green-100 text-green-700' :
+                        <span className={`px-2 py-1 rounded-full text-xs ${payment.status === 'paid' ? 'bg-green-100 text-green-700' :
                           payment.status === 'failed' ? 'bg-red-100 text-red-700' :
-                          'bg-yellow-100 text-yellow-700'
-                        }`}>
+                            'bg-yellow-100 text-yellow-700'
+                          }`}>
                           {payment.status}
                         </span>
                       </div>
@@ -1032,10 +1077,9 @@ const getInitials = (fullName?: string): string => {
           </motion.div>
         );
 
-      // case "back":
-      //     return (
 
-      //     );
+
+
 
       default:
         return (
@@ -1053,6 +1097,8 @@ const getInitials = (fullName?: string): string => {
         );
     }
   };
+
+
 
   // Show loading state while data is being fetched
   if (loading) {
@@ -1079,55 +1125,55 @@ const getInitials = (fullName?: string): string => {
   return (
     <div className="min-h-screen bg-gray-50">
       <ToastContainer position="top-right" autoClose={3000} />
-      
+
       {/* Header */}
-    <header className="bg-white shadow-sm border-b">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-    <div className="flex flex-wrap items-center justify-between gap-4">
-      
-      {/* Logo + Title */}
-      <div className="flex items-center flex-wrap gap-2 sm:gap-4">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm sm:text-base">W</span>
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+
+            {/* Logo + Title */}
+            <div className="flex items-center flex-wrap gap-2 sm:gap-4">
+              <Link to="/" className="flex items-center gap-2">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm sm:text-base">W</span>
+                </div>
+                <span className="text-xl sm:text-2xl font-bold gradient-text">Wyffle</span>
+              </Link>
+
+              <span className="hidden sm:inline text-gray-400">•</span>
+              <span className="text-gray-600 font-medium text-sm sm:text-base">
+                Student Dashboard
+              </span>
+            </div>
+
+            {/* User Info */}
+            <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end">
+              <div className="text-left sm:text-right">
+                <p className="font-semibold text-gray-900 text-sm sm:text-base truncate max-w-[150px] sm:max-w-none">
+                  {studentData.fullName}
+                </p>
+                <p className="text-xs sm:text-sm text-gray-500 truncate max-w-[150px] sm:max-w-none">
+                  {studentData.institute || 'Student'}
+                </p>
+              </div>
+
+              {studentData.profileImage ? (
+                <img
+                  src={studentData.profileImage}
+                  alt="Profile"
+                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover flex-shrink-0"
+                />
+              ) : (
+                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-white font-bold text-sm sm:text-base">
+                    {getInitials(studentData.fullName)}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
-          <span className="text-xl sm:text-2xl font-bold gradient-text">Wyffle</span>
-        </Link>
-
-        <span className="hidden sm:inline text-gray-400">•</span>
-        <span className="text-gray-600 font-medium text-sm sm:text-base">
-          Student Dashboard
-        </span>
-      </div>
-
-      {/* User Info */}
-      <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end">
-        <div className="text-left sm:text-right">
-          <p className="font-semibold text-gray-900 text-sm sm:text-base truncate max-w-[150px] sm:max-w-none">
-            {studentData.fullName}
-          </p>
-          <p className="text-xs sm:text-sm text-gray-500 truncate max-w-[150px] sm:max-w-none">
-            {studentData.institute || 'Student'}
-          </p>
         </div>
-
-        {studentData.profileImage ? (
-          <img
-            src={studentData.profileImage}
-            alt="Profile"
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover flex-shrink-0"
-          />
-        ) : (
-          <div className="w-9 h-9 sm:w-10 sm:h-10 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-bold text-sm sm:text-base">
-              {getInitials(studentData.fullName)}
-            </span>
-          </div>
-        )}
-      </div>
-    </div>
-  </div>
-</header>
+      </header>
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -1145,11 +1191,10 @@ const getInitials = (fullName?: string): string => {
                   <motion.button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
-                      activeTab === tab.id
-                        ? "bg-purple-600 text-white"
-                        : "text-gray-600 hover:bg-gray-50"
-                    }`}
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${activeTab === tab.id
+                      ? "bg-purple-600 text-white"
+                      : "text-gray-600 hover:bg-gray-50"
+                      }`}
                     whileHover={{ x: activeTab === tab.id ? 0 : 4 }}
                     whileTap={{ scale: 0.98 }}
                   >

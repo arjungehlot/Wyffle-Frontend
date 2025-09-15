@@ -73,6 +73,7 @@ interface Student {
 }
 
 interface Application {
+  id: string;
   uid: string;
   fullName: string;
   email: string;
@@ -365,7 +366,7 @@ const adminPassword = "Arjun@123";
     }
   };
 
- const handleUpdateStudentStatus = async (uid: string, status: string) => {
+ const handleUpdateStudentStatus = async (id: string, status: string) => {
   try {
     const token = await auth.currentUser?.getIdToken();
     if (!token) {
@@ -373,7 +374,7 @@ const adminPassword = "Arjun@123";
       return;
     }
 
-    const response = await fetch(`/api/applications/${uid}/status`, {
+    const response = await fetch(`/api/applications/${id}/status`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -897,7 +898,7 @@ const adminPassword = "Arjun@123";
           </div>
         );
 
-     case "applications":
+  case "applications":
   return (
     <div className="space-y-6">
       {/* Search and Filter */}
@@ -950,7 +951,7 @@ const adminPassword = "Arjun@123";
         ) : (
           filteredApplications.map((application, index) => (
             <motion.div
-              key={application.uid}
+              key={application.id}
               className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-shadow"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -990,9 +991,7 @@ const adminPassword = "Arjun@123";
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">
-                        Graduation Year
-                      </p>
+                      <p className="text-sm text-gray-500">Graduation Year</p>
                       <p className="font-medium text-gray-900">
                         {application.yearOfGraduation}
                       </p>
@@ -1044,10 +1043,7 @@ const adminPassword = "Arjun@123";
                       className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
                       whileHover={{ scale: 1.1 }}
                       onClick={() =>
-                        handleUpdateStudentStatus(
-                          application.uid,
-                          "shortlisted"
-                        )
+                        handleUpdateStudentStatus(application.id, "shortlisted") // ✅ use doc ID
                       }
                     >
                       <UserCheck className="w-5 h-5" />
@@ -1061,6 +1057,7 @@ const adminPassword = "Arjun@123";
       </div>
     </div>
   );
+
 
       case "payments":
         return (

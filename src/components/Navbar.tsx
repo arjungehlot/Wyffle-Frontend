@@ -172,8 +172,6 @@ const Navbar: React.FC<NavbarProps> = ({ profileImage = null }) => {
 
   const navLinks = [
     { to: "/#why-wyffle", label: "Why Wyffle" },
-    { to: "/#community", label: "Community" },
-    { to: "/#contact", label: "Contact" },
     { to: "/discord", label: "Discord Server" },
     { to: "/projects", label: "Featured Project" },
     { to: "/event", label: "Events" },
@@ -240,10 +238,14 @@ const Navbar: React.FC<NavbarProps> = ({ profileImage = null }) => {
           </motion.div>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex ml-20 items-center space-x-8">
             {navLinks.map((link) => (
               <NavLink key={link.to} to={link.to} label={link.label} />
             ))}
+          
+          </div>
+
+          <div className="hidden md:block ml-52 h-12 w-36">
             <ApplyButton hasApplied={hasApplied} onApplySuccess={handleApplySuccess} />
           </div>
 

@@ -79,116 +79,113 @@ const Apply = () => {
     }
   };
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+const handleSubmit = async (e: FormEvent) => {
+  e.preventDefault();
 
-    if (!currentUser) {
-      toast.error("Authentication error. Please log in again.");
-      return;
+  if (!currentUser) {
+    toast.error("Authentication error. Please log in again.");
+    return;
+  }
+
+  if (!formData.resumeLink.trim() && !formData.resumeFile) {
+    toast.error("Please provide either a Resume/Portfolio Link or upload a resume file.");
+    return;
+  }
+
+  setIsSubmitting(true);
+  setUploadProgress(0);
+
+  try {
+    const token = await currentUser.getIdToken();
+
+    // ✅ Check if user already has an application in DB
+    const existingResponse = await fetch("/api/applications/my-application", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (existingResponse.ok) {
+      const existingApp = await existingResponse.json();
+      if (existingApp && Object.keys(existingApp).length > 0) {
+        toast.error("You have already submitted an application.");
+        alert("You have already submitted an application.");
+        setIsSubmitting(false);
+        return; // ⛔ stop before uploading
+      }
     }
 
-    if (!formData.resumeLink.trim() && !formData.resumeFile) {
-      toast.error("Please provide either a Resume/Portfolio Link or upload a resume file.");
-      return;
-    }
-
-    setIsSubmitting(true);
-    setUploadProgress(0);
-
-    try {
-      const token = await currentUser.getIdToken();
-
-      // ✅ Check if the user has already submitted
-      const existingResponse = await fetch(`/api/applications/${currentUser.uid}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (existingResponse.ok) {
-        const existingApp = await existingResponse.json();
-        if (existingApp) {
-          toast.error("You have already submitted an application.");
-          alert("You have already submitted an application.");
-          setIsSubmitting(false);
-          return;
-        }
-      }
-
-      let uploadedResumeURL = formData.resumeLink;
-
-      if (formData.resumeFile) {
-        const file = formData.resumeFile;
-        const storageRef = ref(
-          storage,
-          `resumes/${currentUser.uid}/${Date.now()}_${file.name}`
-        );
-        const uploadTask = uploadBytesResumable(storageRef, file);
-
-        uploadedResumeURL = await new Promise((resolve, reject) => {
-          uploadTask.on(
-            "state_changed",
-            (snapshot) => {
-              const progress =
-                (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-              setUploadProgress(Math.round(progress));
-            },
-            reject,
-            async () => {
-              try {
-                const url = await getDownloadURL(uploadTask.snapshot.ref);
-                resolve(url);
-              } catch (err) {
-                reject(err);
-              }
-            }
-          );
-        });
-      }
-
-      const { resumeFile, ...rest } = formData;
-      const payload = {
-        ...rest,
-        resumeURL: uploadedResumeURL,
-        userId: currentUser.uid,
-      };
-
-      const response = await fetch("/api/applications", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        let errorMessage = "Failed to submit application.";
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorMessage;
-        } catch {
-          errorMessage = `Error ${response.status}: ${response.statusText}`;
-        }
-        throw new Error(errorMessage);
-      }
-
-      toast.success("Application submitted successfully!");
-
-      // ✅ Delay navigation so toast is visible
-      setTimeout(() => {
-        navigate("/student-dashboard");
-      }, 2000); // shorter delay (2s is enough)
-    } catch (error) {
-      console.error(error);
-      toast.error(
-        error instanceof Error ? error.message : "An unknown error occurred."
+    // ✅ Handle resume upload if file provided
+    let uploadedResumeURL = formData.resumeLink;
+    if (formData.resumeFile) {
+      const file = formData.resumeFile;
+      const storageRef = ref(
+        storage,
+        `resumes/${currentUser.uid}/${Date.now()}_${file.name}`
       );
-    } finally {
-      setIsSubmitting(false);
-      setUploadProgress(0);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadedResumeURL = await new Promise((resolve, reject) => {
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setUploadProgress(Math.round(progress));
+          },
+          reject,
+          async () => {
+            try {
+              const url = await getDownloadURL(uploadTask.snapshot.ref);
+              resolve(url);
+            } catch (err) {
+              reject(err);
+            }
+          }
+        );
+      });
     }
-  };
+
+    // ✅ Build payload
+    const { resumeFile, ...rest } = formData;
+    const payload = {
+      ...rest,
+      resumeURL: uploadedResumeURL,
+      userId: currentUser.uid,
+    };
+
+    // ✅ Submit application
+    const response = await fetch("/api/applications", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      toast.error(data.message || "Failed to submit application.");
+      alert(data.message || "Failed to submit application.");
+      return;
+    }
+
+    toast.success("Application submitted successfully!");
+
+    // ✅ Delay navigation so toast is visible
+    setTimeout(() => {
+      navigate("/");
+    }, 2000);
+  } catch (error) {
+    console.error(error);
+    toast.error(error instanceof Error ? error.message : "An unknown error occurred.");
+  } finally {
+    setIsSubmitting(false);
+    setUploadProgress(0);
+  }
+};
+
 
 
 
@@ -197,7 +194,7 @@ const Apply = () => {
 
   return (
     <motion.div
-      className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 flex items-center py-20 justify-center px-4"
+      className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 flex items-center py-28 justify-center px-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
