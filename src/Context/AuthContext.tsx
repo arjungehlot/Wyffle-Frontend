@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  console.log(currentUser)
+  // console.log(currentUser)
   localStorage.setItem('CurrentUser', JSON.stringify(currentUser));
 
   // 5. Add types to function parameters

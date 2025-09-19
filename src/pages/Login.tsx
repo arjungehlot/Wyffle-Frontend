@@ -64,7 +64,7 @@ const AuthPage: React.FC = () => {
       localStorage.removeItem('Profile');
 
       hasRedirected.current = false; // Reset redirection flag on logout
-      console.log("User logged out, cleared localStorage");
+      // console.log("User logged out, cleared localStorage");
 
     }
   }, [currentUser, isAdmin, navigate]);
@@ -85,7 +85,7 @@ const refreshToken = async () => {
     const currentUser = auth.currentUser;
     if (currentUser) {
       await currentUser.getIdToken(true); // Force refresh
-      console.log('Token refreshed with updated claims');
+      // console.log('Token refreshed with updated claims');
     }
   } catch (error) {
     console.error('Error refreshing token:', error);

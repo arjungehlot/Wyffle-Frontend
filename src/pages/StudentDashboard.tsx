@@ -201,7 +201,7 @@ const StudentDashboard: React.FC = () => {
         };
         setStudentData(normalizedProfile);
         setEditedProfile(normalizedProfile);
-        console.log("Fetched profile:", normalizedProfile);
+        // console.log("Fetched profile:", normalizedProfile);
         localStorage.setItem("Profile", normalizedProfile.profileImage || "");
       } catch (error) {
         console.error("Error fetching profile:", error);
