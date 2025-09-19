@@ -171,7 +171,11 @@ const handleSubmit = async (e: FormEvent) => {
       return;
     }
 
+    alert("Application submitted!");
+
     toast.success("Application submitted successfully!");
+
+    localStorage.setItem("hasApplied", "true");
 
     // ✅ Delay navigation so toast is visible
     setTimeout(() => {
@@ -400,6 +404,8 @@ const handleSubmit = async (e: FormEvent) => {
               className={inputStyles}
             />
           </InputGroup>
+
+          <p><strong>Note:</strong> You can submit this application form only once. Please provide accurate information to increase your chances of selection.</p>
 
           <motion.button
             type="submit"

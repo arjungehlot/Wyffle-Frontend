@@ -43,6 +43,7 @@ const AuthPage: React.FC = () => {
       };
       // Save the user data to localStorage
       localStorage.setItem('userData', JSON.stringify(userData));
+      localStorage.setItem('googleProfile', currentUser.photoURL || "");
       
       
       // --- Redirection Logic (Unchanged) ---
@@ -55,6 +56,16 @@ const AuthPage: React.FC = () => {
       // --- NEW: Clear User Data on Logout ---
       // This is crucial to ensure no stale data is left behind
       localStorage.removeItem('userData');
+      localStorage.removeItem('Profile');
+      localStorage.removeItem('hasApplied');
+      localStorage.removeItem('googleProfile');
+      localStorage.removeItem('hasApplied');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('Profile');
+
+      hasRedirected.current = false; // Reset redirection flag on logout
+      console.log("User logged out, cleared localStorage");
+
     }
   }, [currentUser, isAdmin, navigate]);
 

@@ -228,6 +228,7 @@ const adminPassword = "Arjun@123";
       try {
         const studentsData = await ApiService.getAllStudents();
         setStudents(studentsData.data || []);
+        console.log("Fetched students:", studentsData.data);
       } catch (error) {
         console.error('Error fetching students:', error);
       }
@@ -236,6 +237,7 @@ const adminPassword = "Arjun@123";
       try {
         const applicationsData = await ApiService.getAllApplications();
         setApplications(applicationsData.data || []);
+        console.log("Fetched applications:", applicationsData.data);
       } catch (error) {
         console.error('Error fetching applications:', error);
       }

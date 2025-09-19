@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   User,
@@ -127,6 +127,8 @@ const StudentDashboard: React.FC = () => {
   const [discountAmount, setDiscountAmount] = useState<number>(0);
   const [finalPrice, setFinalPrice] = useState<number>(399);
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [editedProfile, setEditedProfile] = useState<Partial<StudentData>>({});
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [skillsInput, setSkillsInput] = useState(
@@ -199,6 +201,8 @@ const StudentDashboard: React.FC = () => {
         };
         setStudentData(normalizedProfile);
         setEditedProfile(normalizedProfile);
+        console.log("Fetched profile:", normalizedProfile);
+        localStorage.setItem("Profile", normalizedProfile.profileImage || "");
       } catch (error) {
         console.error("Error fetching profile:", error);
 
@@ -240,12 +244,43 @@ const StudentDashboard: React.FC = () => {
     }
   };
 
+  // ✅ Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleOptionClick = (action: string) => {
+    if (action === "home") navigate("/");
+    if (action === "profile") navigate("/profile");
+    if (action === "apply") navigate("/apply");
+    if (action === "logout") {
+      localStorage.clear();
+      navigate("/login");
+    }
+    setIsOpen(false); // ✅ close menu after click
+  };
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
     type: "profile" | "cover"
   ) => {
     const file = event.target.files?.[0];
     if (file) {
+      // 🔹 Step 1: Show preview immediately
+      const previewUrl = URL.createObjectURL(file);
+
+      if (type === "profile") {
+        setEditedProfile(prev => ({ ...prev, profileImage: previewUrl }));
+      } else {
+        setEditedProfile(prev => ({ ...prev, coverImage: previewUrl }));
+      }
+
+      // 🔹 Step 2: Upload in background
       try {
         const path = `${type}-images/${userData?.uid}/${file.name}`;
         const imageUrl = await ApiService.uploadToFirebase(file, path);
@@ -264,6 +299,7 @@ const StudentDashboard: React.FC = () => {
       }
     }
   };
+
 
   const handleSaveProfile = async () => {
     try {
@@ -555,9 +591,9 @@ const StudentDashboard: React.FC = () => {
           >
             {/* Cover Image */}
             <div className="h-48 bg-gradient-to-r from-purple-500 to-indigo-600 relative">
-              {studentData.coverImage && (
+              {(editedProfile.coverImage || studentData.coverImage) && (
                 <img
-                  src={studentData.coverImage}
+                  src={editedProfile.coverImage || studentData.coverImage || ""}
                   alt="Cover"
                   className="w-full h-full object-cover"
                 />
@@ -576,11 +612,12 @@ const StudentDashboard: React.FC = () => {
                     type="file"
                     className="hidden"
                     accept="image/*"
-                    onChange={(e) => handleImageUpload(e, 'cover')}
+                    onChange={(e) => handleImageUpload(e, "cover")}
                   />
                 </motion.label>
               </div>
             </div>
+
 
             {/* Profile Content */}
             <div className="px-8 pb-8">
@@ -588,9 +625,9 @@ const StudentDashboard: React.FC = () => {
               <div className="flex flex-col items-center -mt-16">
                 <div className="relative">
                   <div className="w-32 h-32 rounded-full border-4 border-white bg-gray-200 overflow-hidden shadow-lg">
-                    {studentData.profileImage ? (
+                    {(editedProfile.profileImage || studentData.profileImage) ? (
                       <img
-                        src={studentData.profileImage}
+                        src={editedProfile.profileImage || studentData.profileImage || ""}
                         alt="Profile"
                         className="w-full h-full object-cover"
                       />
@@ -602,6 +639,7 @@ const StudentDashboard: React.FC = () => {
                       </div>
                     )}
                   </div>
+
                   <motion.label
                     htmlFor="profile-upload"
                     className="absolute bottom-2 right-2 bg-purple-600 text-white p-2 rounded-full cursor-pointer shadow-md"
@@ -1078,9 +1116,6 @@ const StudentDashboard: React.FC = () => {
         );
 
 
-
-
-
       default:
         return (
           <motion.div
@@ -1123,103 +1158,141 @@ const StudentDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <ToastContainer position="top-right" autoClose={3000} />
+  <div className="min-h-screen bg-gray-50">
+  <ToastContainer position="top-right" autoClose={3000} />
 
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+  {/* Header */}
+  <header className="bg-white shadow-sm border-b">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        
+        {/* Logo + Title */}
+        <div className="flex items-center flex-wrap gap-2 sm:gap-4">
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm sm:text-base">W</span>
+            </div>
+            <span className="text-xl sm:text-2xl font-bold gradient-text">Wyffle</span>
+          </Link>
 
-            {/* Logo + Title */}
-            <div className="flex items-center flex-wrap gap-2 sm:gap-4">
-              <Link to="/" className="flex items-center gap-2">
-                <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm sm:text-base">W</span>
-                </div>
-                <span className="text-xl sm:text-2xl font-bold gradient-text">Wyffle</span>
-              </Link>
+          <span className="hidden sm:inline text-gray-400">•</span>
+          <span className="text-gray-600 font-medium text-sm sm:text-base">
+            Student Dashboard
+          </span>
+        </div>
 
-              <span className="hidden sm:inline text-gray-400">•</span>
-              <span className="text-gray-600 font-medium text-sm sm:text-base">
-                Student Dashboard
+        {/* Apply Button */}
+        <button
+          onClick={() => navigate("/apply")}
+          className="bg-[#8337e9] text-white md:ml-96 px-2 sm:px-6 py-2 sm:py-2.5 
+                     rounded-lg font-semibold shadow-md 
+                     hover:bg-[#6c1fd0] active:scale-95 
+                     transition-all duration-300 ease-in-out
+                     text-sm sm:text-base"
+        >
+          Apply
+        </button>
+
+        {/* User Info */}
+        <div className="text-left sm:text-right">
+          <p className="font-semibold text-gray-900 text-sm sm:text-base truncate max-w-[150px] sm:max-w-none">
+            {studentData.fullName}
+          </p>
+          <p className="text-xs sm:text-sm text-gray-500 truncate max-w-[150px] sm:max-w-none">
+            {studentData.institute || "Student"}
+          </p>
+        </div>
+
+        {/* User Info + Dropdown */}
+        <div
+          className="relative"
+          ref={dropdownRef}
+          onMouseEnter={() => setIsOpen(true)}
+        >
+          {/* Profile Image */}
+          {studentData.profileImage ? (
+            <img
+              src={studentData.profileImage}
+              alt="Profile"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-black mr-3 object-cover flex-shrink-0 cursor-pointer"
+            />
+          ) : (
+            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer">
+              <span className="text-white font-bold text-sm sm:text-base">
+                {studentData.fullName?.[0] || "U"}
               </span>
             </div>
+          )}
 
-            {/* User Info */}
-            <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end">
-              <div className="text-left sm:text-right">
-                <p className="font-semibold text-gray-900 text-sm sm:text-base truncate max-w-[150px] sm:max-w-none">
-                  {studentData.fullName}
-                </p>
-                <p className="text-xs sm:text-sm text-gray-500 truncate max-w-[150px] sm:max-w-none">
-                  {studentData.institute || 'Student'}
-                </p>
-              </div>
-
-              {studentData.profileImage ? (
-                <img
-                  src={studentData.profileImage}
-                  alt="Profile"
-                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover flex-shrink-0"
-                />
-              ) : (
-                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-white font-bold text-sm sm:text-base">
-                    {getInitials(studentData.fullName)}
-                  </span>
-                </div>
-              )}
+          {/* Dropdown Menu */}
+          {isOpen && (
+            <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+              <button
+                onClick={() => handleOptionClick("home")}
+                className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+              >
+                Home
+              </button>
+              <button
+                onClick={() => handleOptionClick("logout")}
+                className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100"
+              >
+                Logout
+              </button>
             </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar */}
-          <div className="lg:w-1/4">
-            <motion.div
-              className="bg-white rounded-2xl shadow-lg p-6"
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className="space-y-2">
-                {tabs.map((tab) => (
-                  <motion.button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${activeTab === tab.id
-                      ? "bg-purple-600 text-white"
-                      : "text-gray-600 hover:bg-gray-50"
-                      }`}
-                    whileHover={{ x: activeTab === tab.id ? 0 : 4 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <tab.icon className="w-5 h-5" />
-                    <span>{tab.label}</span>
-                  </motion.button>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Main Content */}
-          <div className="lg:w-3/4">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-            >
-              {renderTabContent()}
-            </motion.div>
-          </div>
+          )}
         </div>
       </div>
     </div>
+  </header>
+
+  {/* Content */}
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="flex flex-col lg:flex-row gap-8">
+      {/* Sidebar */}
+      <div className="lg:w-1/4">
+        <motion.div
+          className="bg-white rounded-2xl shadow-lg p-6"
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="space-y-2">
+            {tabs.map((tab) => (
+              <motion.button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
+                  activeTab === tab.id
+                    ? "bg-purple-600 text-white"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
+                whileHover={{ x: activeTab === tab.id ? 0 : 4 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <tab.icon className="w-5 h-5" />
+                <span>{tab.label}</span>
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Main Content */}
+      <div className="lg:w-3/4">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          {renderTabContent()}
+        </motion.div>
+      </div>
+    </div>
+  </div>
+</div>
+
   );
 };
 
