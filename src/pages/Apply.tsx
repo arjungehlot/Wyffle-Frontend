@@ -31,6 +31,8 @@ const Apply = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
 
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://wyffle-backend-1.onrender.com' || 'http://localhost:3000';
+
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -99,7 +101,7 @@ const handleSubmit = async (e: FormEvent) => {
     const token = await currentUser.getIdToken();
 
     // ✅ Check if user already has an application in DB
-    const existingResponse = await fetch("/api/applications/my-application", {
+    const existingResponse = await fetch(`${BASE_URL}/api/applications/my-application`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -154,7 +156,7 @@ const handleSubmit = async (e: FormEvent) => {
     };
 
     // ✅ Submit application
-    const response = await fetch("/api/applications", {
+    const response = await fetch(`${BASE_URL}/api/applications`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
