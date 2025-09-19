@@ -53,6 +53,8 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
     }
   });
 
+  
+
   useEffect(() => {
     try {
       localStorage.setItem(key, JSON.stringify(value));
@@ -206,6 +208,16 @@ const Navbar: React.FC<NavbarProps> = ({ profileImage = null }) => {
     setIsMobileMenuOpen(false);
   };
 
+ // Get userData from localStorage
+const userDataString = localStorage.getItem("userData");
+
+// Parse it as JSON
+const userData = userDataString ? JSON.parse(userDataString) : null;
+
+// Access isAdmin safely
+const isAdmin = userData?.isAdmin === true; // true if isAdmin is true, else false
+
+
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -307,43 +319,64 @@ const Navbar: React.FC<NavbarProps> = ({ profileImage = null }) => {
                   )}
                 </button>
 
-                {/* Dropdown */}
-                {showDropdown && (
-                  <motion.div
-                    className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-200 py-3 z-50 origin-top-right"
-                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <div className="px-4 py-2 border-b border-gray-100">
-                      <p className="text-sm font-medium text-gray-800 truncate">
-                        Hey, {user.displayName || user.email}
-                      </p>
-                    </div>
+              {/* Dropdown */}
+{showDropdown && (
+  <motion.div
+    className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-200 py-3 z-50 origin-top-right"
+    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+    animate={{ opacity: 1, y: 0, scale: 1 }}
+    transition={{ duration: 0.2 }}
+  >
+    <div className="px-4 py-2 border-b border-gray-100">
+      <p className="text-sm font-medium text-gray-800 truncate">
+        Hey, {user.displayName || user.email}
+      </p>
+    </div>
 
-                    <button
-                      onClick={handleDashboard}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors duration-200"
-                      type="button"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0h6" />
-                      </svg>
-                      Dashboard
-                    </button>
+    <button
+      onClick={handleDashboard}
+      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors duration-200"
+      type="button"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0h6" />
+      </svg>
+      Dashboard
+    </button>
 
-                    <button
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200"
-                      type="button"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-10V5" />
-                      </svg>
-                      Logout
-                    </button>
-                  </motion.div>
-                )}
+    {/* Admin Link: only show if user is admin */}
+    {/* 
+      Replace the following condition with your actual admin check logic.
+      For example, you might store admin status in a custom claim or in localStorage.
+      Example using localStorage:
+      const isAdmin = localStorage.getItem("isAdmin") === "true";
+    */}
+   {isAdmin && (
+  <button
+    onClick={() => navigate("/admin")}
+    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200"
+    type="button"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+    Admin Dashboard
+  </button>
+)}
+
+    <button
+      onClick={handleLogout}
+      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200"
+      type="button"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-10V5" />
+      </svg>
+      Logout
+    </button>
+  </motion.div>
+)}
+
               </div>
             )}
           </div>
