@@ -153,6 +153,8 @@ const [uploadDocumentType, setUploadDocumentType] = useState<string>("offer_lett
 const [uploadStudentUid, setUploadStudentUid] = useState<string>("");
 
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://wyffle-backend-1.onrender.com' || 'http://localhost:3000';
+
   const tabs = [
     { id: "students", label: "Students", icon: Users },
     { id: "applications", label: "Applications", icon: FileText },
@@ -385,7 +387,7 @@ const [uploadStudentUid, setUploadStudentUid] = useState<string>("");
         return;
       }
 
-      const response = await fetch(`/api/applications/${id}/status`, {
+      const response = await fetch(`${BASE_URL}/api/applications/${id}/status`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
