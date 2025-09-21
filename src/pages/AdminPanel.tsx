@@ -79,7 +79,7 @@ interface Application {
   fullName: string;
   email: string;
   phoneNo: string;
-  dateOfBirth: string | Date;
+  dateOfBirth: any;
   location: string;
   college: string;
   degree: string;
@@ -87,7 +87,6 @@ interface Application {
   skills: string[];
   interestedFields: string[];
   resumeLink?: string;
-  resumeURL?: string;
   motivation: string;
   availability: string;
   source: string;
@@ -117,44 +116,44 @@ interface Payment {
 }
 
 const AdminPanel: React.FC = () => {
-  // ✅ State Management
-  const [activeTab, setActiveTab] = useState<string>("students");
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+ // ✅ State Management
+const [activeTab, setActiveTab] = useState<string>("students");
+const [searchTerm, setSearchTerm] = useState<string>("");
+const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  // Student / Application selection
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-  const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
+// Student / Application selection
+const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
 
-  // Modal states
-  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
-  const [isViewModalOpen, setIsViewModalOpen] = useState<boolean>(false);
-  const [isAppViewModalOpen, setIsAppViewModalOpen] = useState<boolean>(false);
-  const [isAppEditModalOpen, setIsAppEditModalOpen] = useState<boolean>(false);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState<boolean>(false);
+// Modal states
+const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+const [isViewModalOpen, setIsViewModalOpen] = useState<boolean>(false);
+const [isAppViewModalOpen, setIsAppViewModalOpen] = useState<boolean>(false);
+const [isAppEditModalOpen, setIsAppEditModalOpen] = useState<boolean>(false);
+const [isUploadModalOpen, setIsUploadModalOpen] = useState<boolean>(false);
 
-  // Editing states
-  const [editedStudent, setEditedStudent] = useState<Student | null>(null);
-  const [editedApplication, setEditedApplication] = useState<Application | null>(null);
+// Editing states
+const [editedStudent, setEditedStudent] = useState<Student | null>(null);
+const [editedApplication, setEditedApplication] = useState<Application | null>(null);
 
-  // Data lists
-  const [students, setStudents] = useState<Student[]>([]);
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [documents, setDocuments] = useState<Document[]>([]);
-  const [payments, setPayments] = useState<Payment[]>([]);
+// Data lists
+const [students, setStudents] = useState<Student[]>([]);
+const [applications, setApplications] = useState<Application[]>([]);
+const [documents, setDocuments] = useState<Document[]>([]);
+const [payments, setPayments] = useState<Payment[]>([]);
 
-  // Misc
-  const [loading, setLoading] = useState<boolean>(true);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+// Misc
+const [loading, setLoading] = useState<boolean>(true);
+const [refreshing, setRefreshing] = useState<boolean>(false);
+const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
-  // File Upload
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
-  const [uploadDocumentType, setUploadDocumentType] = useState<string>("offer_letter");
-  const [uploadStudentUid, setUploadStudentUid] = useState<string>("");
+// File Upload
+const [uploadFile, setUploadFile] = useState<File | null>(null);
+const [uploadDocumentType, setUploadDocumentType] = useState<string>("offer_letter");
+const [uploadStudentUid, setUploadStudentUid] = useState<string>("");
 
 
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://wyffle-backend-1.onrender.com' || 'http://localhost:3000';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://wyffle-backend-1.onrender.com' || 'http://localhost:3000';
 
   const tabs = [
     { id: "students", label: "Students", icon: Users },
@@ -359,25 +358,25 @@ const AdminPanel: React.FC = () => {
   };
 
   const handleSaveStudentChanges = async (): Promise<void> => {
-    if (!editedStudent || !editedStudent.uid) {
-      toast.error("No student selected to update");
-      return;
-    }
+  if (!editedStudent || !editedStudent.uid) {
+    toast.error("No student selected to update");
+    return;
+  }
 
-    try {
-      await ApiService.updateStudent(editedStudent.uid, editedStudent);
-      toast.success("Student updated successfully");
+  try {
+    await ApiService.updateStudent(editedStudent.uid, editedStudent);
+    toast.success("Student updated successfully");
 
-      // ✅ Refresh data after save
-      await fetchData();
+    // ✅ Refresh data after save
+    await fetchData();
 
-      // ✅ Close modal only after successful update
-      setIsEditModalOpen(false);
-    } catch (error) {
-      console.error("Error updating student:", error);
-      toast.error("Failed to update student");
-    }
-  };
+    // ✅ Close modal only after successful update
+    setIsEditModalOpen(false);
+  } catch (error) {
+    console.error("Error updating student:", error);
+    toast.error("Failed to update student");
+  }
+};
 
 
   const handleUpdateStudentStatus = async (id: string, status: string) => {
@@ -515,9 +514,9 @@ const AdminPanel: React.FC = () => {
                   <h5 className="font-semibold mb-3">Academic Information</h5>
                   <div className="space-y-2">
                     <p><span className="text-gray-500">College:</span> {selectedStudent.college}</p>
-                    <p><span className="text-gray-500">location:</span> {selectedStudent.location}</p>
+                     <p><span className="text-gray-500">location:</span> {selectedStudent.location}</p>
                     <p><span className="text-gray-500">Degree:</span> {selectedStudent.degree}</p>
-                    <p><span className="text-gray-500">DOB:</span> {selectedStudent.dateOfBirth}</p>
+                    <p><span className="text-gray-500">DOB:</span> {selectedStudent.dateOfBirth}</p>                  
                     <p><span className="text-gray-500">Year:</span> {selectedStudent.year}</p>
                   </div>
                 </div>
@@ -602,138 +601,138 @@ const AdminPanel: React.FC = () => {
     </div>
   );
 
-  const EditStudentModal: React.FC = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <motion.div
-        className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
+ const EditStudentModal: React.FC = () => (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <motion.div
+      className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+    >
+      <form
+        className="p-6"
+        onSubmit={(e) => {
+          e.preventDefault(); // 🛑 prevent auto close
+          handleSaveStudentChanges();
+        }}
       >
-        <form
-          className="p-6"
-          onSubmit={(e) => {
-            e.preventDefault(); // 🛑 prevent auto close
-            handleSaveStudentChanges();
-          }}
-        >
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-2xl font-bold text-gray-900">Edit Student</h3>
-            <button
-              type="button"
-              onClick={() => setIsEditModalOpen(false)}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-2xl font-bold text-gray-900">Edit Student</h3>
+          <button
+            type="button"
+            onClick={() => setIsEditModalOpen(false)}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
 
-          {editedStudent && (
-            <div className="space-y-4">
-              {/* Status */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Status
-                </label>
-                <select
-                  value={editedStudent.status}
-                  onChange={(e) =>
-                    setEditedStudent({ ...editedStudent, status: e.target.value })
-                  }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                >
-                  {statusOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Payment Status */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Payment Status
-                </label>
-                <select
-                  value={editedStudent.paymentStatus}
-                  onChange={(e) =>
-                    setEditedStudent({
-                      ...editedStudent,
-                      paymentStatus: e.target.value,
-                    })
-                  }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                >
-                  {paymentStatusOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Progress */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Progress (%)
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={editedStudent.progressPercentage}
-                  onChange={(e) =>
-                    setEditedStudent({
-                      ...editedStudent,
-                      progressPercentage: parseInt(e.target.value) || 0,
-                    })
-                  }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-
-              {/* Batch Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Batch Name
-                </label>
-                <input
-                  type="text"
-                  value={editedStudent.batchName || ""}
-                  onChange={(e) =>
-                    setEditedStudent({
-                      ...editedStudent,
-                      batchName: e.target.value,
-                    })
-                  }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-
-              {/* Buttons */}
-              <div className="flex space-x-4 pt-4">
-                <motion.button
-                  type="submit"
-                  className="flex-1 bg-purple-600 text-white py-3 rounded-lg font-semibold"
-                  whileHover={{ scale: 1.02 }}
-                >
-                  Save Changes
-                </motion.button>
-                <motion.button
-                  type="button"
-                  className="flex-1 border border-gray-300 text-gray-700 py-3 rounded-lg font-semibold"
-                  whileHover={{ scale: 1.02 }}
-                  onClick={() => setIsEditModalOpen(false)}
-                >
-                  Cancel
-                </motion.button>
-              </div>
+        {editedStudent && (
+          <div className="space-y-4">
+            {/* Status */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Status
+              </label>
+              <select
+                value={editedStudent.status}
+                onChange={(e) =>
+                  setEditedStudent({ ...editedStudent, status: e.target.value })
+                }
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+              >
+                {statusOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
             </div>
-          )}
-        </form>
-      </motion.div>
-    </div>
-  );
+
+            {/* Payment Status */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Payment Status
+              </label>
+              <select
+                value={editedStudent.paymentStatus}
+                onChange={(e) =>
+                  setEditedStudent({
+                    ...editedStudent,
+                    paymentStatus: e.target.value,
+                  })
+                }
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+              >
+                {paymentStatusOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Progress */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Progress (%)
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={editedStudent.progressPercentage}
+                onChange={(e) =>
+                  setEditedStudent({
+                    ...editedStudent,
+                    progressPercentage: parseInt(e.target.value) || 0,
+                  })
+                }
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+
+            {/* Batch Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Batch Name
+              </label>
+              <input
+                type="text"
+                value={editedStudent.batchName || ""}
+                onChange={(e) =>
+                  setEditedStudent({
+                    ...editedStudent,
+                    batchName: e.target.value,
+                  })
+                }
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+
+            {/* Buttons */}
+            <div className="flex space-x-4 pt-4">
+              <motion.button
+                type="submit"
+                className="flex-1 bg-purple-600 text-white py-3 rounded-lg font-semibold"
+                whileHover={{ scale: 1.02 }}
+              >
+                Save Changes
+              </motion.button>
+              <motion.button
+                type="button"
+                className="flex-1 border border-gray-300 text-gray-700 py-3 rounded-lg font-semibold"
+                whileHover={{ scale: 1.02 }}
+                onClick={() => setIsEditModalOpen(false)}
+              >
+                Cancel
+              </motion.button>
+            </div>
+          </div>
+        )}
+      </form>
+    </motion.div>
+  </div>
+);
 
 
   const UploadDocumentModal: React.FC = () => (
@@ -826,172 +825,172 @@ const AdminPanel: React.FC = () => {
     }
 
     switch (activeTab) {
-      case "students":
-        return (
-          <div className="space-y-6">
-            {/* Search and Filter */}
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
-              {/* Search */}
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search students..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl 
+     case "students":
+  return (
+    <div className="space-y-6">
+      {/* Search and Filter */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        {/* Search */}
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search students..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl 
                        focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
+          />
+        </div>
 
-              {/* Filter */}
-              <div className="relative">
-                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="pl-10 pr-8 py-3 border border-gray-200 rounded-xl 
+        {/* Filter */}
+        <div className="relative">
+          <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="pl-10 pr-8 py-3 border border-gray-200 rounded-xl 
                        focus:ring-2 focus:ring-purple-500 focus:border-transparent 
                        appearance-none bg-white"
-                >
-                  <option value="all">All Status</option>
-                  {statusOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          >
+            <option value="all">All Status</option>
+            {statusOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </div>
 
-              {/* Refresh */}
-              <motion.button
-                className="bg-purple-600 text-white px-4 py-3 rounded-xl font-medium flex items-center space-x-2"
-                whileHover={{ scale: 1.05 }}
-                onClick={handleRefresh}
-              >
-                <RefreshCw className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`} />
-                <span>Refresh</span>
-              </motion.button>
+        {/* Refresh */}
+        <motion.button
+          className="bg-purple-600 text-white px-4 py-3 rounded-xl font-medium flex items-center space-x-2"
+          whileHover={{ scale: 1.05 }}
+          onClick={handleRefresh}
+        >
+          <RefreshCw className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`} />
+          <span>Refresh</span>
+        </motion.button>
 
-              {/* Upload */}
-              <motion.button
-                className="bg-green-600 text-white px-4 py-3 rounded-xl font-medium flex items-center space-x-2"
-                whileHover={{ scale: 1.05 }}
-                onClick={() => setIsUploadModalOpen(true)}
-              >
-                <Upload className="w-5 h-5" />
-                <span>Upload Document</span>
-              </motion.button>
-            </div>
+        {/* Upload */}
+        <motion.button
+          className="bg-green-600 text-white px-4 py-3 rounded-xl font-medium flex items-center space-x-2"
+          whileHover={{ scale: 1.05 }}
+          onClick={() => setIsUploadModalOpen(true)}
+        >
+          <Upload className="w-5 h-5" />
+          <span>Upload Document</span>
+        </motion.button>
+      </div>
 
-            {/* Students List */}
-            <div className="space-y-4">
-              {filteredStudents.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-gray-500 text-lg">No students found</p>
-                </div>
-              ) : (
-                filteredStudents.map((student, index) => (
-                  <motion.div
-                    key={student.uid}
-                    className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 
-                         hover:shadow-xl transition-shadow"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1, duration: 0.4 }}
-                  >
-                    <div className="flex items-center justify-between">
-                      {/* Student Info */}
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-4 mb-3">
-                          <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
-                            <span className="text-white font-bold">
-                              {student.fullName
-                                ?.split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </span>
-                          </div>
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900">
-                              {student.fullName}
-                            </h3>
-                            <p className="text-gray-600">{student.email}</p>
-                          </div>
-                        </div>
-
-                        {/* College / Degree / Progress */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                          <div>
-                            <p className="text-sm text-gray-500">College</p>
-                            <p className="font-medium text-gray-900">
-                              {student.college || "N/A"}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-500">Degree</p>
-                            <p className="font-medium text-gray-900">
-                              {student.degree || "N/A"}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-500">Progress</p>
-                            <p className="font-medium text-gray-900">
-                              {student.progressPercentage}%
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Status + Payment */}
-                        <div className="flex flex-wrap gap-3">
-                          <span
-                            className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                              student.status
-                            )}`}
-                          >
-                            {student.status}
-                          </span>
-                          <span
-                            className={`px-3 py-1 rounded-full text-sm font-medium ${getPaymentStatusColor(
-                              student.paymentStatus
-                            )}`}
-                          >
-                            Payment: {student.paymentStatus}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex flex-col space-y-2">
-                        <motion.button
-                          className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                          whileHover={{ scale: 1.1 }}
-                          onClick={() => handleViewStudent(student)}
-                        >
-                          <Eye className="w-5 h-5" />
-                        </motion.button>
-                        <motion.button
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          whileHover={{ scale: 1.1 }}
-                          onClick={() => handleEditStudent(student)}
-                        >
-                          <Edit className="w-5 h-5" />
-                        </motion.button>
-                        <motion.button
-                          className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                          whileHover={{ scale: 1.1 }}
-                          onClick={() => handleSendEmail(student.email)}
-                        >
-                          <Mail className="w-5 h-5" />
-                        </motion.button>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))
-              )}
-            </div>
+      {/* Students List */}
+      <div className="space-y-4">
+        {filteredStudents.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">No students found</p>
           </div>
-        );
+        ) : (
+          filteredStudents.map((student, index) => (
+            <motion.div
+              key={student.uid}
+              className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 
+                         hover:shadow-xl transition-shadow"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1, duration: 0.4 }}
+            >
+              <div className="flex items-center justify-between">
+                {/* Student Info */}
+                <div className="flex-1">
+                  <div className="flex items-center space-x-4 mb-3">
+                    <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold">
+                        {student.fullName
+                          ?.split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {student.fullName}
+                      </h3>
+                      <p className="text-gray-600">{student.email}</p>
+                    </div>
+                  </div>
+
+                  {/* College / Degree / Progress */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                      <p className="text-sm text-gray-500">College</p>
+                      <p className="font-medium text-gray-900">
+                        {student.college || "N/A"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Degree</p>
+                      <p className="font-medium text-gray-900">
+                        {student.degree || "N/A"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Progress</p>
+                      <p className="font-medium text-gray-900">
+                        {student.progressPercentage}%
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Status + Payment */}
+                  <div className="flex flex-wrap gap-3">
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                        student.status
+                      )}`}
+                    >
+                      {student.status}
+                    </span>
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${getPaymentStatusColor(
+                        student.paymentStatus
+                      )}`}
+                    >
+                      Payment: {student.paymentStatus}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex flex-col space-y-2">
+                  <motion.button
+                    className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    onClick={() => handleViewStudent(student)}
+                  >
+                    <Eye className="w-5 h-5" />
+                  </motion.button>
+                  <motion.button
+                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    onClick={() => handleEditStudent(student)}
+                  >
+                    <Edit className="w-5 h-5" />
+                  </motion.button>
+                  <motion.button
+                    className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    onClick={() => handleSendEmail(student.email)}
+                  >
+                    <Mail className="w-5 h-5" />
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          ))
+        )}
+      </div>
+    </div>
+  );
 
 
       case "applications":
@@ -1104,16 +1103,8 @@ const AdminPanel: React.FC = () => {
                           </span>
                           <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
                             Applied:{" "}
-                            {application.createdAt &&
-                              new Date(
-                                Date.parse(application.createdAt.replace(" at", ""))
-                              ).toLocaleDateString("en-IN", {
-                                day: "2-digit",
-                                month: "long",
-                                year: "numeric",
-                              })}
+                            {new Date(application.createdAt).toLocaleDateString()}
                           </span>
-
                         </div>
                       </div>
 
@@ -1122,7 +1113,7 @@ const AdminPanel: React.FC = () => {
                         <motion.button
                           className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
                           whileHover={{ scale: 1.1 }}
-                          onClick={() => window.open(application.resumeURL, "_blank")}
+                          onClick={() => handleViewApplication(application)}
                         >
                           <Eye className="w-5 h-5" />
                         </motion.button>
@@ -1369,8 +1360,8 @@ const AdminPanel: React.FC = () => {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${activeTab === tab.id
-                      ? "bg-purple-600 text-white"
-                      : "text-gray-600 hover:bg-gray-50"
+                        ? "bg-purple-600 text-white"
+                        : "text-gray-600 hover:bg-gray-50"
                       }`}
                     whileHover={{ x: activeTab === tab.id ? 0 : 4 }}
                     whileTap={{ scale: 0.98 }}
