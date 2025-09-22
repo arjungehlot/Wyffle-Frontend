@@ -31,6 +31,7 @@ import { FaWhatsapp } from "react-icons/fa";
 import "./index.css";
 import DiscordGuide from "./pages/DiscordGuide";
 import FeaturedProjects from "./components/FeaturedProjects";
+import Contact from "./pages/Contact";
 
 // --- Main App Entry Point (Unchanged) ---
 function AppWrapper() {
@@ -125,6 +126,7 @@ function App() {
           <Route path="/discord" element={<DiscordGuide />} />
           <Route path="/projects" element={<FeaturedProjects />} />
            <Route path="/event" element={<Events />} />
+           <Route path="/contact" element={<Contact />} />
           <Route
             path="/student-dashboard"
             element={

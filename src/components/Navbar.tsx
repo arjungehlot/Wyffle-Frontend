@@ -199,8 +199,8 @@ const Navbar: React.FC<NavbarProps> = ({ profileImage = null }) => {
   const navLinks = [
     { to: "/#why-wyffle", label: "Why Wyffle" },
     { to: "/discord", label: "Discord Server" },
-    { to: "/projects", label: "Featured Project" },
     { to: "/event", label: "Events" },
+    { to: "/contact", label: "Contact" },
   ];
 
   const handleLogin = () => {

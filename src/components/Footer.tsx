@@ -22,7 +22,6 @@ const Footer = () => {
 
   const resourceLinks = [
     { name: 'Student Dashboard', href: '/student-dashboard' },
-    { name: 'Admin Panel', href: '/admin' },
     { name: 'Documentation', href: '/docs' },
     { name: 'API Reference', href: '/api' }
   ];

@@ -112,6 +112,7 @@ const Community = () => {
             className="bg-white text-purple-600 px-8 py-4 rounded-xl font-semibold text-lg shadow-lg flex items-center space-x-3 mx-auto"
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.95 }}
+            onClick={() => window.open('https://discord.gg/W4jpq2fBdq', '_blank')}
           >
             <MessageCircle className="w-6 h-6" />
             <span>Join Discord Community</span>
