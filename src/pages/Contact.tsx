@@ -11,7 +11,6 @@ import {
   FaUser,
   FaMapMarkerAlt
 } from "react-icons/fa";
-import aiImage from "../Assets/Contact.jpg";
 import arjunImage from "../Assets/arjun.jpg";
 import ayushImage from "../Assets/ayush.jpg";
 
