@@ -10,27 +10,30 @@ import {
   ArrowRight,
   Heart
 } from 'lucide-react';
-import logo from "../Assets/Logo-BG.jpg"
+import { useNavigate } from 'react-router-dom';
+import logo from "../Assets/Logo-BG.jpg";
 
 const Footer = () => {
+  const navigate = useNavigate();
+
   const companyLinks = [
-    { name: 'About Us', href: '/about' },
-    { name: 'How It Works', href: '/how' },
-    { name: 'Success Stories', href: '/testimonials' },
-    { name: 'Contact', href: '/contact' }
+    { name: 'About Us', path: '/about' },
+    { name: 'How It Works', path: '/how' },
+    { name: 'Success Stories', path: '/testimonials' },
+    { name: 'Contact', path: '/contact' }
   ];
 
   const resourceLinks = [
-    { name: 'Student Dashboard', href: '/student-dashboard' },
-    { name: 'Documentation', href: '/docs' },
-    { name: 'API Reference', href: '/api' }
+    { name: 'Student Dashboard', path: '/student-dashboard' },
+    { name: 'Documentation', path: '/docs' },
+    { name: 'API Reference', path: '/api' }
   ];
 
   const communityLinks = [
-    { name: 'Discord Server', href: '/discord' },
-    { name: 'WhatsApp Groups', href: '/whatsapp' },
-    { name: 'Student Forums', href: '/forums' },
-    { name: 'Events', href: '/events' }
+    { name: 'Discord Server', path: '/discord' },
+    { name: 'WhatsApp Groups', path: '/whatsapp' },
+    { name: 'Student Forums', path: '/forums' },
+    { name: 'Events', path: '/event' }
   ];
 
   const socialLinks = [
@@ -39,6 +42,10 @@ const Footer = () => {
     { icon: Linkedin, href: '#linkedin', label: 'LinkedIn' },
     { icon: Instagram, href: '#instagram', label: 'Instagram' }
   ];
+
+  const handleNav = (path:any) => {
+    navigate(path);
+  };
 
   return (
     <footer className="bg-gray-900 text-white">
@@ -89,15 +96,15 @@ const Footer = () => {
             <ul className="space-y-3">
               {companyLinks.map((link, index) => (
                 <li key={index}>
-                  <motion.a
-                    href={link.href}
+                  <motion.button
+                    onClick={() => handleNav(link.path)}
                     className="text-gray-300 hover:text-purple-400 transition-colors duration-200 flex items-center group"
                     whileHover={{ x: 5 }}
                     transition={{ duration: 0.2 }}
                   >
                     <ArrowRight className="w-4 h-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
                     {link.name}
-                  </motion.a>
+                  </motion.button>
                 </li>
               ))}
             </ul>
@@ -114,15 +121,15 @@ const Footer = () => {
             <ul className="space-y-3">
               {resourceLinks.map((link, index) => (
                 <li key={index}>
-                  <motion.a
-                    href={link.href}
+                  <motion.button
+                    onClick={() => handleNav(link.path)}
                     className="text-gray-300 hover:text-purple-400 transition-colors duration-200 flex items-center group"
                     whileHover={{ x: 5 }}
                     transition={{ duration: 0.2 }}
                   >
                     <ArrowRight className="w-4 h-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
                     {link.name}
-                  </motion.a>
+                  </motion.button>
                 </li>
               ))}
             </ul>
@@ -139,25 +146,27 @@ const Footer = () => {
             <ul className="space-y-3 mb-6">
               {communityLinks.map((link, index) => (
                 <li key={index}>
-                  <motion.a
-                    href={link.href}
+                  <motion.button
+                    onClick={() => handleNav(link.path)}
                     className="text-gray-300 hover:text-purple-400 transition-colors duration-200 flex items-center group"
                     whileHover={{ x: 5 }}
                     transition={{ duration: 0.2 }}
                   >
                     <ArrowRight className="w-4 h-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity" />
                     {link.name}
-                  </motion.a>
+                  </motion.button>
                 </li>
               ))}
             </ul>
 
-            {/* Social Links */}
+            {/* Social Links (still external) */}
             <div className="flex space-x-4">
               {socialLinks.map((social, index) => (
                 <motion.a
                   key={index}
                   href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-10 h-10 bg-gray-800 rounded-xl flex items-center justify-center hover:bg-purple-600 transition-colors duration-300"
                   whileHover={{ scale: 1.1, y: -2 }}
                   transition={{ duration: 0.2 }}

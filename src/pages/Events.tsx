@@ -94,18 +94,17 @@ const Events: React.FC = () => {
       </section>
 
       {/* Category Tabs */}
-      <div className="max-w-6xl mx-auto mt-12 px-6">
-        <div className="flex justify-center gap-4 mb-10">
+      <div className="max-w-6xl mx-auto mt-12 px-4 sm:px-6">
+        <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mb-8">
           {categories.map((cat) => (
             <motion.button
               key={cat}
               onClick={() => setActiveCategory(cat)}
               whileHover={{ scale: 1.05 }}
-              className={`px-5 py-2 rounded-full font-semibold transition-all duration-300 ${
-                activeCategory === cat
+              className={`px-4 sm:px-5 py-2 rounded-full font-medium text-sm sm:text-base transition-all duration-300 ${activeCategory === cat
                   ? "bg-purple-600 text-white shadow-lg"
                   : "bg-gray-200 text-gray-800"
-              }`}
+                }`}
             >
               {cat}
             </motion.button>
@@ -166,43 +165,43 @@ const Events: React.FC = () => {
         </div>
       </section>
 
-   {/* Why Join Section */}
-<section className="bg-gradient-to-b from-purple-50 to-white mt-20 py-20 px-6">
-  <motion.h2
-    initial={{ opacity: 0, y: -20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.8 }}
-    viewport={{ once: true }}
-    className="text-4xl md:text-5xl font-extrabold text-center text-purple-700 mb-16"
-  >
-    Why Participate?
-  </motion.h2>
+      {/* Why Join Section */}
+      <section className="bg-gradient-to-b from-purple-50 to-white mt-20 py-20 px-6">
+        <motion.h2
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+          className="text-4xl md:text-5xl font-extrabold text-center text-purple-700 mb-16"
+        >
+          Why Participate?
+        </motion.h2>
 
-  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 max-w-6xl mx-auto">
-    {[
-      { icon: <FaTrophy className="text-5xl text-yellow-400" />, title: "Win Prizes", desc: "Compete and earn amazing rewards for your skills." },
-      { icon: <FaUsers className="text-5xl text-purple-600" />, title: "Network", desc: "Connect with peers, mentors, and industry leaders." },
-      { icon: <FaCode className="text-5xl text-green-500" />, title: "Boost Skills", desc: "Enhance your coding and problem-solving expertise." },
-      { icon: <FaCalendarAlt className="text-5xl text-blue-500" />, title: "Certificates", desc: "Get verified certificates to showcase your achievements." },
-    ].map((item, idx) => (
-      <motion.div
-        key={idx}
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        whileHover={{ scale: 1.1, y: -5 }}
-        transition={{ type: "spring", stiffness: 120, damping: 10 }}
-        viewport={{ once: true }}
-        className="bg-white border border-purple-100 rounded-2xl p-10 flex flex-col items-center text-center shadow-lg hover:shadow-2xl transition-shadow duration-300"
-      >
-        <div className="mb-4 p-4 bg-purple-100 rounded-full flex items-center justify-center">
-          {item.icon}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 max-w-6xl mx-auto">
+          {[
+            { icon: <FaTrophy className="text-5xl text-yellow-400" />, title: "Win Prizes", desc: "Compete and earn amazing rewards for your skills." },
+            { icon: <FaUsers className="text-5xl text-purple-600" />, title: "Network", desc: "Connect with peers, mentors, and industry leaders." },
+            { icon: <FaCode className="text-5xl text-green-500" />, title: "Boost Skills", desc: "Enhance your coding and problem-solving expertise." },
+            { icon: <FaCalendarAlt className="text-5xl text-blue-500" />, title: "Certificates", desc: "Get verified certificates to showcase your achievements." },
+          ].map((item, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              whileHover={{ scale: 1.1, y: -5 }}
+              transition={{ type: "spring", stiffness: 120, damping: 10 }}
+              viewport={{ once: true }}
+              className="bg-white border border-purple-100 rounded-2xl p-10 flex flex-col items-center text-center shadow-lg hover:shadow-2xl transition-shadow duration-300"
+            >
+              <div className="mb-4 p-4 bg-purple-100 rounded-full flex items-center justify-center">
+                {item.icon}
+              </div>
+              <h3 className="mt-4 font-bold text-xl text-purple-700">{item.title}</h3>
+              <p className="mt-2 text-gray-600 text-sm md:text-base">{item.desc}</p>
+            </motion.div>
+          ))}
         </div>
-        <h3 className="mt-4 font-bold text-xl text-purple-700">{item.title}</h3>
-        <p className="mt-2 text-gray-600 text-sm md:text-base">{item.desc}</p>
-      </motion.div>
-    ))}
-  </div>
-</section>
+      </section>
 
 
       {/* Call to Action Footer */}

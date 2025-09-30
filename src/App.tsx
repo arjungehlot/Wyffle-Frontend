@@ -32,12 +32,15 @@ import "./index.css";
 import DiscordGuide from "./pages/DiscordGuide";
 import FeaturedProjects from "./components/FeaturedProjects";
 import Contact from "./pages/Contact";
+import ScrollToTop from "./utils/ScrollToTop";
+import { About } from "./pages/About";
 
 // --- Main App Entry Point (Unchanged) ---
 function AppWrapper() {
   return (
     <AuthProvider>
       <Router>
+       <ScrollToTop />
         <App />
       </Router>
     </AuthProvider>
@@ -125,8 +128,9 @@ function App() {
           <Route path="/events" element={<Events />} />
           <Route path="/discord" element={<DiscordGuide />} />
           <Route path="/projects" element={<FeaturedProjects />} />
-           <Route path="/event" element={<Events />} />
-           <Route path="/contact" element={<Contact />} />
+          <Route path="/event" element={<Events />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/about" element={<About />} />
           <Route
             path="/student-dashboard"
             element={
